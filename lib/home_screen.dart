@@ -3,6 +3,7 @@ import 'background.dart';
 import 'history.dart';
 import 'doctorscreen.dart';
 import 'setting.dart';
+import 'glucose_monitor_screen.dart'; // ✅ Import your monitor screen
 
 class HomeScreen extends StatelessWidget {
   final int glucoseLevel = 110;
@@ -95,9 +96,21 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
+
+              // ✅ Add Monitor Button here
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  _HomeButton(
+                    icon: Icons.show_chart,
+                    label: "Monitor",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => GlucoseMonitorScreen()),
+                      );
+                    },
+                  ),
                   _HomeButton(
                     icon: Icons.history_edu,
                     label: "History",
@@ -129,6 +142,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(height: 20),
             ],
           ),

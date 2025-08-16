@@ -4,7 +4,8 @@ import 'login_screen.dart';
 import 'history.dart';
 import 'doctorscreen.dart';
 import 'setting.dart';
-import 'home_screen.dart'; // Import the moved HomeScreen
+import 'home_screen.dart';
+import 'glucose_monitor_screen.dart'; // <-- New file for glucose monitoring screen
 
 void main() {
   runApp(MyApp());
@@ -29,7 +30,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'GlucoBand',
       debugShowCheckedModeBanner: false,
-      theme: _isDarkMode ? ThemeData.dark() : ThemeData(primarySwatch: Colors.teal),
+      theme: _isDarkMode
+          ? ThemeData.dark()
+          : ThemeData(primarySwatch: Colors.teal),
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(),
@@ -44,6 +47,7 @@ class _MyAppState extends State<MyApp> {
           isDarkMode: _isDarkMode,
           onThemeChanged: _toggleDarkMode,
         ),
+        '/glucose': (context) => GlucoseMonitorScreen(), // <-- New route
       },
     );
   }
