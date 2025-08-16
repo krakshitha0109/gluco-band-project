@@ -4,7 +4,7 @@
     <application
         android:label="gluco_band5g"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@drawable/glucose">
 
         <activity
             android:name=".MainActivity"
