@@ -99,7 +99,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 decoration: InputDecoration(labelText: "Contact Number"),
                 keyboardType: TextInputType.phone,
-                validator: (value) => value!.isEmpty ? "Enter contact" : null,
+                maxLength: 10, // ✅ Restrict to max 10 digits
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Enter contact number";
+                  } else if (value.length != 10) {
+                    return "Invalid Number";
+                  } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                    return "Only numbers allowed";
+                  }
+                  return null;
+                },
                 onSaved: (value) => _contact = value!,
               ),
               TextFormField(

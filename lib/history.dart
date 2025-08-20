@@ -1,34 +1,79 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:http/http.dart' as http;
 import 'background.dart';
 
-class HistoryScreen extends StatelessWidget {
-  final List<FlSpot> glucoseData = [
-    FlSpot(1, 100),
-    FlSpot(2, 110),
-    FlSpot(3, 95),
-    FlSpot(4, 130),
-    FlSpot(5, 115),
-    FlSpot(6, 105),
-    FlSpot(7, 125),
-  ];
+class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({super.key});
 
-  final List<Map<String, dynamic>> readingList = [
-    {'day': 'Day 1', 'value': 100},
-    {'day': 'Day 2', 'value': 110},
-    {'day': 'Day 3', 'value': 95},
-    {'day': 'Day 4', 'value': 130},
-    {'day': 'Day 5', 'value': 115},
-    {'day': 'Day 6', 'value': 105},
-    {'day': 'Day 7', 'value': 125},
-  ];
+  @override
+  State<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  List<FlSpot> glucoseData = [];
+  List<Map<String, dynamic>> readingList = [];
+  bool isLoading = true;
+
+  // 🔑 Replace with your ThingSpeak Channel ID & Read API Key
+  final String channelId = "3013676";
+  final String apiKey = "YWQBRJ8I400HC5F6";
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGlucoseHistory();
+  }
+
+  Future<void> fetchGlucoseHistory() async {
+    final url =
+        "https://api.thingspeak.com/channels/$channelId/fields/2.json?api_key=$apiKey&results=7";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final feeds = data["feeds"] as List;
+
+        List<FlSpot> chartData = [];
+        List<Map<String, dynamic>> listData = [];
+
+        for (int i = 0; i < feeds.length; i++) {
+          final feed = feeds[i];
+          final glucose = double.tryParse(feed["field2"] ?? "0") ?? 0.0;
+          final time = feed["created_at"] ?? "";
+
+          // Add to chart (x = index+1, y = glucose value)
+          chartData.add(FlSpot(i.toDouble() + 1, glucose));
+
+          // Add to list
+          listData.add({
+            'day': "Reading ${i + 1}",
+            'value': glucose,
+            'time': time,
+          });
+        }
+
+        setState(() {
+          glucoseData = chartData;
+          readingList = listData;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Glucose History")),
+      appBar: AppBar(title: const Text("Glucose History")),
       body: Background(
-        child: SingleChildScrollView(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
@@ -43,8 +88,10 @@ class HistoryScreen extends StatelessWidget {
                           interval: 20,
                           reservedSize: 40,
                           getTitlesWidget: (value, meta) {
-                            return Text(value.toInt().toString(),
-                                style: TextStyle(fontSize: 10));
+                            return Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(fontSize: 10),
+                            );
                           },
                         ),
                       ),
@@ -52,8 +99,8 @@ class HistoryScreen extends StatelessWidget {
                         sideTitles: SideTitles(
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
-                            return Text("Day ${value.toInt()}",
-                                style: TextStyle(fontSize: 10));
+                            return Text("R${value.toInt()}",
+                                style: const TextStyle(fontSize: 10));
                           },
                           reservedSize: 32,
                         ),
@@ -74,21 +121,28 @@ class HistoryScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
-              Divider(),
-              SizedBox(height: 12),
-              Text("Recent Glucose Readings",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 12),
+              const Text(
+                "Recent Glucose Readings",
+                style:
+                TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.blue),
+              ),
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: readingList.length,
                 itemBuilder: (context, index) {
                   final reading = readingList[index];
                   return ListTile(
-                    leading: Icon(Icons.bloodtype, color: Colors.red),
+                    leading:
+                    const Icon(Icons.bloodtype, color: Colors.red),
                     title: Text(reading['day']),
-                    trailing: Text("${reading['value']} mg/dL"),
+                    subtitle: Text("Time: ${reading['time']}"),
+                    
+                    trailing:
+                    Text("${reading['value']} mg/dL"),
                   );
                 },
               ),
