@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart'; // ✅ Firebase core
 import 'splash_screen.dart';
 import 'login_screen.dart';
 import 'history.dart';
 import 'doctorscreen.dart';
 import 'setting.dart';
 import 'home_screen.dart';
-import 'glucose_monitor_screen.dart'; // <-- New file for glucose monitoring screen
+import 'glucose_monitor_screen.dart';
 
-void main() {
+// Ensure Firebase is initialized before app runs
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // ✅ Initialize Firebase
   runApp(MyApp());
 }
 
@@ -36,7 +40,7 @@ class _MyAppState extends State<MyApp> {
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(),
-        '/login': (context) => LoginScreen(),
+        '/login': (context) => LoginScreen(), // ✅ Firebase login will be here
         '/home': (context) => HomeScreen(
           isDarkMode: _isDarkMode,
           onThemeChanged: _toggleDarkMode,
@@ -47,7 +51,7 @@ class _MyAppState extends State<MyApp> {
           isDarkMode: _isDarkMode,
           onThemeChanged: _toggleDarkMode,
         ),
-        '/glucose': (context) => GlucoseMonitorScreen(), // <-- New route
+        '/glucose': (context) => GlucoseMonitorScreen(),
       },
     );
   }

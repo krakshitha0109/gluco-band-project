@@ -113,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onSaved: (value) => _contact = value!,
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: "Symptoms / Reason"),
+                decoration: InputDecoration(labelText: "Glucose Status"),
                 onSaved: (value) => _symptoms = value ?? "",
               ),
               SizedBox(height: 20),

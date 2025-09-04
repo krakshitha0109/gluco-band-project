@@ -8,7 +8,7 @@ import 'glucose_monitor_screen.dart'; // ✅ Import your monitor screen
 class HomeScreen extends StatelessWidget {
   final int glucoseLevel = 110;
   final String status = "Normal";
-  final String lastUpdated = "5 mins ago";
+
 
   final bool isDarkMode;
   final Function(bool) onThemeChanged;
@@ -87,10 +87,7 @@ class HomeScreen extends StatelessWidget {
                         style: headingTextStyle.copyWith(fontSize: 20, color: Colors.teal),
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        "Last Updated: $lastUpdated",
-                        style: const TextStyle(color: Colors.grey),
-                      ),
+
                     ],
                   ),
                 ),

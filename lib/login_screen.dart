@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -9,11 +10,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  void _login(BuildContext context) {
+  Future<void> _login(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
-      // You can add Firebase or API login here
-      Navigator.pushReplacementNamed(context, '/home');
+      setState(() => _isLoading = true);
+
+      try {
+        // 👇 Firebase Auth login
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        // ✅ Success → go to home
+        Navigator.pushReplacementNamed(context, '/home');
+      } on FirebaseAuthException catch (e) {
+        // ❌ Error → show popup
+        String message;
+        if (e.code == 'user-not-found') {
+          message = 'No user found with this email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password entered.';
+        } else {
+          message = 'Login failed: ${e.message}';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -30,25 +57,33 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Icon(Icons.health_and_safety, size: 100, color: Colors.teal),
                 SizedBox(height: 20),
-                Text("Gluco Band", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                Text("Gluco Band",
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                 SizedBox(height: 40),
                 TextFormField(
                   controller: _emailController,
-                  decoration: InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email)),
+                  decoration: InputDecoration(
+                      labelText: 'Email', prefixIcon: Icon(Icons.email)),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) =>
-                  value == null || !value.contains('@') ? 'Enter a valid email' : null,
+                  value == null || !value.contains('@')
+                      ? 'Enter a valid email'
+                      : null,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock)),
+                  decoration: InputDecoration(
+                      labelText: 'Password', prefixIcon: Icon(Icons.lock)),
                   obscureText: true,
-                  validator: (value) =>
-                  value == null || value.length < 6 ? 'Password must be at least 6 characters' : null,
+                  validator: (value) => value == null || value.length < 6
+                      ? 'Password must be at least 6 characters'
+                      : null,
                 ),
                 SizedBox(height: 30),
-                ElevatedButton(
+                _isLoading
+                    ? CircularProgressIndicator()
+                    : ElevatedButton(
                   onPressed: () => _login(context),
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(double.infinity, 50),
